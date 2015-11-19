@@ -31,8 +31,7 @@ acquire(struct spinlock *lk)
   // The xchg is atomic.
   // It also serializes, so that reads after acquire are not
   // reordered before it. 
-  while(xchg(&lk->locked, 1) != 0)
-    ;
+  while(xchg(&lk->locked, 1) != 0);
 
   // Record info about lock acquisition for debugging.
   lk->cpu = cpu;
