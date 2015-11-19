@@ -7,6 +7,8 @@
 
 uint stack_thread[64];
 int upper_bound = 64; 
+
+
 //int PGSIZE = 4096;
 
 void lock_init(lock_t *lock) {
@@ -22,30 +24,30 @@ void lock_release(lock_t *lock) {
 }
 
 int thread_join(int pid) {
+	
 	int next_pid = join(pid);
-
 	if(pid != -1) {
-		free(stack_thread[next_pid]);
+		free((void*)stack_thread[next_pid-1]);
 	}
 	return next_pid;
 }
 
 int thread_create(void (*start_routine)(void *), void *arg) {
 	
-	void *Stack = malloc(PGSIZE * 2);
+	void *stack = malloc((uint)PGSIZE * 2);
 
-	if((uint)Stack%PGSIZE) {
-		Stack = Stack + (PGSIZE -(uint)Stack % PGSIZE)
+	if((uint)stack%PGSIZE) {
+		stack = stack + (PGSIZE -(uint)stack % PGSIZE);
 	}
-
-	int pid = clone(start_routine, arg, Stack); 
 	
-	if (pid < 0) {
-		if (pid > upper_bound) {
-			return -1;
+	int pid = clone(start_routine, arg, stack); 
+	
+	if (pid > 0) {
+		if (pid < upper_bound) {
+			stack_thread[pid-1] = (uint)stack;
 		}
 	}
-	stack_thread[pid] = Stack;	
+	//stack_thread[pid] = stack;	
 	
 	return pid;
 }
